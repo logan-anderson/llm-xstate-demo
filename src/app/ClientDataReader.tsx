@@ -25,11 +25,21 @@ export const ClientDataReader = () => {
         }
 
         const decodedChunk = decoder.decode(value, { stream: true });
-        const json = JSON.parse(decodedChunk);
-        console.log({ json });
-        send(json);
+
+        decodedChunk
+          .split("\n")
+          .filter(Boolean)
+          .forEach((line) => {
+            try {
+              const json = JSON.parse(line);
+              send(json);
+            } catch (error) {
+              console.log(error);
+            }
+          });
       }
     } catch (error) {
+      console.log(error);
       setLoading(false);
     }
   };
