@@ -28,9 +28,7 @@ export function LangChainStream() {
     handlers: {
       handleLLMNewToken: async (token: string) => {
         await writer.ready;
-        console.log("token", token);
         await sendEvent({ writer, data: { text: token, type: "type" } });
-        // await writer.write(token);
       },
       handleChainEnd: async (_outputs: any, runId: string) => {
         await writer.ready;
