@@ -64,7 +64,8 @@ export function LangChainStream() {
         await handleError(e, runId);
       },
       handleToolStart: async (_tool: any, _input: string, runId: string) => {
-        // handleStart(runId);
+        await writer.ready;
+        await sendEvent({ writer, data: { type: "useTool" } });
       },
       handleToolEnd: async (output: string, runId: string) => {
         // writer.write(`<Observation>${output}</Observation>\n`);

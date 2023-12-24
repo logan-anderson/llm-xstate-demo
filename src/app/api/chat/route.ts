@@ -8,7 +8,7 @@ export async function GET() {
   const { executor, stream, handlers } = await getExecutor();
   executor.call(
     {
-      input: "How are you doing?",
+      input: "What is the square root of 2",
     },
     [handlers]
   );

@@ -1,27 +1,18 @@
 import { createMachine, assign } from "xstate";
 
-export const toggleMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QBcD2UoBswDoCSAdgIYDGyAlgG5gDEaG2A2gAwC6ioADqrORagQ4gAHogAcAZhwSArACY5EgCwA2ZQE4l6lXIA0IAJ6IAjCrE4xM+WIDszS3JvrjNgL6v99LLgCCZKrReTGxC3Lz8gkgiJswyOEo2MpLGkmIqKjYq+kYIxjgqSc72xnJizOVKCe4eIASoEHBCQWChPHzkAkKiCAC0JczxJYrpZUqW2Yg9lvkqSswlNhKaEo7unuje+MT+1K3hHZGg3T02coMKEiPMYzITCGU46ur2YqoymUoy9msgzTh+FF2UTC7U6UW6cgyOHmEmYikSMmMMnUekM4nUOHecjGxm0xlUkiU1VcQA */
-  id: "toggle",
-  initial: "Inactive",
-  states: {
-    Inactive: {
-      on: { toggle: "Active" },
-    },
-    Active: {
-      on: { toggle: "Inactive" },
-    },
-  },
-});
-
 type Message = {
   text: string;
   user: "agent" | "user";
 };
 export interface ChatMachineTypes {
   context: {
+    userChatText: string;
     messages: Message[];
   };
+  // value: {
+  //   UserMessage: "Typing";
+  //   AgentMessage: "Typing" | "Loading" | "UsingTool";
+  // };
   events:
     | { type: "messageSend" }
     | { type: "done" }
@@ -29,10 +20,11 @@ export interface ChatMachineTypes {
     | { type: "type"; text: string };
 }
 export const chatMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QGMAWBDALgYgLZ1nRgGUwA7CAbQAYBdRUABwHtYBLTN5shkAT0QBaAEwBmAHQBOaZIDsANmqT5AVgCMwtQBZhAGhAAPRNuHVx1NWpUr5ADmEOtorQF8X+tFmwRuYGvSQQFnZObl4BBBEJGTlFZXVNHX0jBBMzCysbe0dnNw8MTHEAVVgwACcAWQIiMHEAFT5GNjIobExGvzpeYI4uHkCU4R1xeS1VFUlhWS1rCdt9CLVpcWFbWy1qW1lqHXltPJBPQoBBGDJMKthCGG9ff27WXrCBxBmzLW2LeXjqIdkF4zyCSiWRDX6iSQ2aiyBQHI7iU7kC7VGDiAA2zHQEGarXajE6ASYj1C-VAKVkKgkwhsIOk31Ealk834xhUZlGKlsKk0bOstkZcIKCLOyKuNXRmOxLWwAFdSnVmMw0fdAj0SbxyZSVjTZHTJAymQCEFN5CMNjymdTVNR5IKsMKkZdrrUGk1pXiCQ8Qn0NcYNLZzGpbHZRktPsyIg41NrqL8Q3ZtEy7ScRU7xa6cbL5YrlV1VcSfS9UrHhCNaVYFNzJBYjVNo9ROXtRLZJC3RAzkw7zmnUSUcQqlW0Oiqid7nmTjCWy7qK6phNW1EbRKZxGstGoQRCsvPbe5DkKSuUe2A8CiwKQKCOggXx4ZXrHxHzfvrtB94ka1NRgaDzVvFDDdz3MhmAgOBeCOL0nlJO9IiGI0oikGRbD-ZdNDUTtD0qM9IPVIs4JZVJLCkVQtC2OQlFEBsVAw0osLFVEMxaHDCwnBBQVrHZHx2dsf3kYQ9lsTtEW7bD8zHaCUgmWRxFBZstGkDcdBbI0gXEVCX3XUEpmXITUzPCUsRxZjbxSDkZLEdYFOcVZJA-FRpIcLYJnkzkNzsXTHX0xioGMiS-U0FYYSDIMHCGZxawUcwKWsL8gRsD4PJE+jaj7FoBzRXzfQQLZoxbezREpDZdRtCLTVsTZGSDcqdg2UQ3DcIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QGMAWBDALgOgKqzACcBZOWdGAYgFsyKwBlMAOwgG0AGAXUVAAcA9rACWmYQOa8QAD0QAmAIwA2bEoCsAFgCcGuToAcHAMwalSgDQgAnvI1Hs2gOxH9Sx0o0KNHNQoC+fpZoWHgEJHQw2AAqVnzCzFCUmLFgnDxIIIIiYhJSsgiOatiOdtqadmpaRkZqljYICo5aDvqOyoYcStX6cgFBGDgAgjDMmKSw5FQQEqncUlmi4pIZ+Yoq6tq6BsamFtaIXvrYcicexgqdao59IMFDI2MRYNgAMgLoEPGJyXyz6fxCRa5FaINRyDTYDgKHouNSGfQaNRGOoHNQcVSI-RGJoaTwnFw3O7YYYsR4Teivd6fBKUACuBCiAgEABs0vNATllqB8mCIVCYfo4RwEUiUQhqkUwW05BxHPovFoSoSBsSHuNJs8YnEaT8-uzsks8ogtBx0XK5I4OHJquotGYxeCFNgFGC7UoLnpLZplSESaN1RStV86Qymay5hkFpyjQVnNgjFpFToNnotHIHVViljFApGsKPP5ArcVX6yRrQl9GSykik2ZGOYaQbH7Amk6ZNKn0-txXZVMLLUotApk1oAkXmAIIHApHd9UCuTJEABaGXHNTqDiI9feMyaMUrjQ+nD4IgBmBz6NNi3FUpaco1KomPb1NPOjzgk0mC2WoxH0Knp5oliL4L0bblEEcRwHSaYp3SHXFKh6Ro1D-UszzAUDgXA8UumwE19EFRMjDkW11DFXDiL0aFFRld1h1QtVALeD4QPrA0sMXBBPCdfDCKqEjKjI7tiOaORDBdNE4TlHwGNJdCgO1KBMIXfITTkSEE1o-QqlNYixRMJ1dEghQ5DUbdNELfpfUY8lInwSsw2UmN31UK5NCMJQERdYV9JqVQ71zK1PAIlCxyAA */
   id: "chat",
   context: {
-    messages: [{ text: "", user: "user" }],
+    userChatText: "",
+    messages: [],
   },
   types: {} as ChatMachineTypes,
   states: {
@@ -42,12 +34,8 @@ export const chatMachine = createMachine({
           on: {
             type: {
               actions: assign({
-                messages: ({ event, context }) => {
-                  const oldMessages = context.messages.slice(0, -1);
-                  return [
-                    ...oldMessages,
-                    { text: event.text, user: "user" } as Message,
-                  ];
+                userChatText: ({ event }) => {
+                  return event.text;
                 },
               }),
               target: "Typing",
@@ -65,9 +53,11 @@ export const chatMachine = createMachine({
             messages: ({ context }) => {
               return [
                 ...context.messages,
+                { text: context.userChatText, user: "user" } as Message,
                 { text: "", user: "agent" } as Message,
               ];
             },
+            userChatText: () => "",
           }),
         },
       },
@@ -75,7 +65,7 @@ export const chatMachine = createMachine({
 
     AgentMessage: {
       states: {
-        loading: {
+        Loading: {
           on: {
             type: {
               target: "Typing",
@@ -109,25 +99,16 @@ export const chatMachine = createMachine({
             useTool: "UsingTool",
           },
         },
-
         UsingTool: {
           on: {
             type: "Typing",
           },
         },
       },
-      initial: "loading",
+      initial: "Loading",
       on: {
         done: {
           target: "UserMessage",
-          actions: assign({
-            messages: ({ context }) => {
-              return [
-                ...context.messages,
-                { text: "", user: "user" } as Message,
-              ];
-            },
-          }),
         },
       },
     },

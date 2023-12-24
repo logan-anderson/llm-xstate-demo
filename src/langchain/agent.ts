@@ -25,16 +25,6 @@ export const getExecutor = async () => {
   const executor = await initializeAgentExecutorWithOptions(tools, chat, {
     memory,
     agentType: "openai-functions",
-    // verbose: true,
   });
   return { executor, stream, handlers };
 };
-
-// const executor = await initializeAgentExecutorWithOptions(tools, chat, {
-//   agentType: "openai-functions",
-//   verbose: true,
-// });
-
-// const result = await executor.invoke({
-//   input: "What is the weather in New York?",
-// });
