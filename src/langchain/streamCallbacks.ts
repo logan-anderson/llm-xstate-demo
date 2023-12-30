@@ -28,7 +28,7 @@ export function LangChainStream() {
     handlers: {
       handleLLMNewToken: async (token: string) => {
         await writer.ready;
-        await sendEvent({ writer, data: { text: token, type: "type" } });
+        await sendEvent({ writer, data: { text: token, type: "agentType" } });
       },
       handleChainEnd: async (_outputs: any, runId: string) => {
         await writer.ready;
