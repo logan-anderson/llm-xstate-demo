@@ -3,7 +3,14 @@ import { useMachine } from "@xstate/react";
 import { chatMachine } from "./machine";
 
 export const ClientDataReader = () => {
-  const [state, send] = useMachine(chatMachine);
+  const [state, send] = useMachine(chatMachine, {
+    devTools: true,
+    inspect: (inspectionEvent) => {
+      if (inspectionEvent.type === "@xstate.event") {
+        console.log(inspectionEvent.event);
+      }
+    },
+  });
 
   return (
     <div>
@@ -14,8 +21,14 @@ export const ClientDataReader = () => {
       >
         Stream data
       </button>
-      <div>State Value: {JSON.stringify(state.value)}</div>
-      <div>State Context: {JSON.stringify(state.context)}</div>
+      <div>
+        State Value:
+        <pre>{JSON.stringify(state.value, null, 2)}</pre>
+      </div>
+      <div>
+        State Context:
+        <pre>{JSON.stringify(state.context, null, 2)}</pre>
+      </div>
       {state.matches("AgentMessage.UsingTool") && (
         <div>Using Tool!!!!!!!!!!!!!!!!!!!</div>
       )}
@@ -23,8 +36,30 @@ export const ClientDataReader = () => {
         <div className="bg-white shadow-md rounded-lg max-w-lg w-full">
           <div className="p-4 h-80 overflow-y-auto">
             {state?.context?.messages
-              ?.filter((x) => x.text)
+              ?.filter((x) => {
+                if (x.user === "assistant") {
+                  return Boolean(x.text);
+                }
+                return true;
+              })
               .map((message, index) => {
+                if (message.user == "tool") {
+                  return (
+                    <div className="mb-2 text-left" key={index}>
+                      <div
+                        className={` bg-gray-200 text-gray-700 rounded-lg py-2 px-4 inline-block`}
+                      >
+                        Used a tool! text: {message.text}
+                        <br />
+                        tool: {message.toolOutput}
+                        <br />
+                        input: {message.toolInput}
+                        <br />
+                        output: {message.toolOutput}
+                      </div>
+                    </div>
+                  );
+                }
                 return (
                   <div
                     className={`mb-2 ${

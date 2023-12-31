@@ -1,5 +1,6 @@
 import { ChatMachineTypes } from "@/app/machine";
 import type { CallbackHandlerMethods } from "langchain/callbacks";
+import { AgentAction } from "langchain/schema";
 
 async function sendEvent({
   writer,
@@ -8,14 +9,13 @@ async function sendEvent({
   writer: WritableStreamDefaultWriter<any>;
   data: ChatMachineTypes["events"];
 }) {
+  await writer.ready;
   await writer.write(`${JSON.stringify(data)}\n`);
 }
 
 export function LangChainStream() {
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
-
-  //   const runs = new Set();
 
   const handleError = async (e: Error, runId: string) => {
     //   runs.delete(runId);
@@ -27,11 +27,10 @@ export function LangChainStream() {
     stream: stream,
     handlers: {
       handleLLMNewToken: async (token: string) => {
-        await writer.ready;
-        await sendEvent({ writer, data: { text: token, type: "agentType" } });
+        if (token)
+          await sendEvent({ writer, data: { text: token, type: "agentType" } });
       },
       handleChainEnd: async (_outputs: any, runId: string) => {
-        await writer.ready;
         await sendEvent({ writer, data: { type: "done" } });
         await writer.close();
       },
@@ -63,35 +62,53 @@ export function LangChainStream() {
       handleChainError: async (e: Error, runId: string) => {
         await handleError(e, runId);
       },
-      handleToolStart: async (_tool: any, _input: string, runId: string) => {
-        await writer.ready;
-        await sendEvent({ writer, data: { type: "useTool" } });
-      },
-      handleToolEnd: async (_tool, runId: string) => {
-        console.log("tool end");
+      // handleToolStart: async (_tool: any, _input: string, runId: string) => {
+      //   console.log("input", _input);
+      //   await sendEvent({ writer, data: { type: "useTool" } });
+      // },
+      handleToolEnd: async (output: string, runId: string) => {
         await sendEvent({
           writer,
           data: {
-            text: _tool.toString() + "TOOL END",
             type: "doneUseTool",
-            ctx: _tool,
+            toolOutput: output,
           },
         });
-        // writer.write(`<Observation>${output}</Observation>\n`);
-        // await handleEnd(runId);
       },
       handleToolError: async (e: Error, runId: string) => {
         // await handleError(e, runId);
       },
-      handleAgentAction: async (_action: any, runId: string) => {
+      handleAgentAction: async (action: AgentAction, runId: string) => {
         console.log("agent action");
-        console.log(_action);
+        console.log({ input: action.toolInput });
+        await sendEvent({
+          writer,
+          data: {
+            type: "useTool",
+            toolName: action.tool,
+            // @ts-ignore
+            toolInput: action.toolInput?.input,
+            log: action.log,
+          },
+        });
         // handleStart(runId);
       },
-      handleAgentEnd: async (_output: any, runId: string) => {
-        console.log("agent end");
-        console.log(_output);
-      },
+      // handleAgentEnd: async (
+      //   output: {
+      //     returnValues: { output: string };
+      //     log: string;
+      //   },
+      //   runId: string
+      // ) => {
+      //   await sendEvent({
+      //     writer,
+      //     data: {
+      //       type: "doneUseTool",
+      //       toolOutput: output.returnValues.output,
+      //       log: output.log,
+      //     },
+      //   });
+      // },
     } as CallbackHandlerMethods,
   };
 }

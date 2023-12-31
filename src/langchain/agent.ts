@@ -25,7 +25,7 @@ const chat = new ChatOpenAI({
 export const getExecutor = async ({ messages }: { messages: Message[] }) => {
   const { handlers, stream } = LangChainStream();
   // TODO: use functions instead of tool
-  const memoryMessages = messages.slice(0, -2).map((message) => {
+  const memoryMessages = messages.slice(0, -1).map((message) => {
     if (message.user === "user")
       return new HumanMessage({ content: message.text });
     if (message.user === "assistant")

@@ -52,9 +52,20 @@ export interface ChatMachineTypes {
   events:
     | { type: "messageSend" }
     | { type: "done" }
-    | { type: "useTool" }
+    | {
+        type: "useTool";
+        log?: string;
+        toolInput?: string;
+        toolName: string;
+      }
+    | {
+        type: "doneUseTool";
+        toolOutput: string;
+        toolName?: string;
+        log?: string;
+        text?: string;
+      }
     | { type: "userType"; text: string }
-    | { type: "doneUseTool"; text?: string; ctx?: any }
     | { type: "agentType"; text: string };
 }
 
@@ -111,6 +122,7 @@ export const chatMachine = createMachine(
                 target: "Typing",
                 actions: assign({
                   messages: ({ event, context }) => {
+                    if (!event.text) return context.messages;
                     const oldMessages = context.messages.slice(0, -1);
                     const lastMessage =
                       context.messages[context.messages.length - 1];
@@ -129,7 +141,10 @@ export const chatMachine = createMachine(
                 }),
               },
 
-              useTool: "UsingTool",
+              useTool: {
+                target: "UsingTool",
+                actions: [{ type: "onUseToolAction" }],
+              },
             },
           },
 
@@ -139,13 +154,17 @@ export const chatMachine = createMachine(
                 target: "Typing",
                 actions: assign({
                   messages: ({ event, context }) => {
+                    if (!event.text) return context.messages;
                     const oldMessages = context.messages.slice(0, -1);
-                    const lastMessage =
-                      context.messages[context.messages.length - 1];
-                    lastMessage.text += event.text;
+                    const lastMessage = {
+                      ...context.messages[context.messages.length - 1],
+                    };
 
-                    if (lastMessage.user === "assistant")
+                    if (lastMessage.user === "assistant") {
+                      lastMessage.text += event.text;
                       return [...oldMessages, lastMessage];
+                    }
+
                     return [
                       ...context.messages,
                       {
@@ -156,30 +175,20 @@ export const chatMachine = createMachine(
                   },
                 }),
               },
-              useTool: "UsingTool",
+              useTool: {
+                target: "UsingTool",
+                actions: [{ type: "onUseToolAction" }],
+              },
             },
           },
 
           UsingTool: {
             on: {
-              agentType: "Typing",
+              // TODO: Does this need to be here?
+              // agentType: "Typing",
               doneUseTool: {
                 target: "Typing",
-                actions: assign({
-                  messages: ({ event, context }) => {
-                    if (event.text) {
-                      return [
-                        ...context.messages,
-                        {
-                          ctx: event.ctx,
-                          text: event.text,
-                          user: "tool" as const,
-                        },
-                      ];
-                    }
-                    return context.messages;
-                  },
-                }),
+                actions: [{ type: "onUseToolAction" }],
               },
             },
           },
@@ -197,6 +206,37 @@ export const chatMachine = createMachine(
   },
   {
     actions: {
+      onUseToolAction: assign({
+        messages: ({ event, context }) => {
+          if (event.type === "useTool") {
+            const newMessage: Message = {
+              toolName: event.toolName,
+              logs: event.log ? [event.log] : [],
+              user: "tool" as const,
+              toolInput: event.toolInput,
+              text: "",
+            };
+            return [...context.messages, newMessage];
+          }
+          const lastMessage = context.messages[context.messages.length - 1];
+          if (event.type === "doneUseTool" && lastMessage.user === "tool") {
+            if (event.log) {
+              lastMessage.logs = lastMessage.logs
+                ? [...lastMessage.logs, event.log]
+                : [event.log];
+            }
+
+            if (event.text) lastMessage.text = lastMessage.text + event.text;
+
+            if (event.toolName) lastMessage.toolName = event.toolName;
+
+            if (event.toolOutput) lastMessage.toolOutput = event.toolOutput;
+
+            return [...context.messages.slice(0, -1), lastMessage];
+          }
+          return context.messages;
+        },
+      }),
       streamRes: async ({ context, self }) => {
         streamData({
           messages: context.messages,
