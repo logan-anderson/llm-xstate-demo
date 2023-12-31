@@ -4,6 +4,12 @@ import { chatMachine } from "./machine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/icons";
+import { useMarkdownProcessor } from "@/hooks";
+
+export const AssistantMessage = ({ text }: { text: string }) => {
+  const content = useMarkdownProcessor(text);
+  return content;
+};
 
 export const ClientDataReader = () => {
   const [state, send] = useMachine(chatMachine, {
@@ -58,7 +64,10 @@ export const ClientDataReader = () => {
                           : "bg-gray-200 text-gray-700"
                       } rounded-lg py-2 px-4 inline-block`}
                     >
-                      {message.text}
+                      {message.user === "user" && message.text}
+                      {message.user === "assistant" && (
+                        <AssistantMessage text={message.text} />
+                      )}
                     </p>
                   </div>
                 );
