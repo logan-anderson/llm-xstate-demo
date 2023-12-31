@@ -1,10 +1,12 @@
 "use client";
 import { useMachine } from "@xstate/react";
 import { chatMachine } from "./machine";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/icons";
 
 export const ClientDataReader = () => {
   const [state, send] = useMachine(chatMachine, {
-    devTools: true,
     inspect: (inspectionEvent) => {
       if (inspectionEvent.type === "@xstate.event") {
         console.log(inspectionEvent.event);
@@ -14,27 +16,9 @@ export const ClientDataReader = () => {
 
   return (
     <div>
-      <button
-        onClick={() => {
-          send({ type: "messageSend" });
-        }}
-      >
-        Stream data
-      </button>
       <div>
-        State Value:
-        <pre>{JSON.stringify(state.value, null, 2)}</pre>
-      </div>
-      <div>
-        State Context:
-        <pre>{JSON.stringify(state.context, null, 2)}</pre>
-      </div>
-      {state.matches("AgentMessage.UsingTool") && (
-        <div>Using Tool!!!!!!!!!!!!!!!!!!!</div>
-      )}
-      <div>
-        <div className="bg-white shadow-md rounded-lg max-w-lg w-full">
-          <div className="p-4 h-80 overflow-y-auto">
+        <div className="bg-white shadow-md rounded-lg w-full">
+          <div className="p-4 min-h-80 overflow-y-auto">
             {state?.context?.messages
               ?.filter((x) => {
                 if (x.user === "assistant") {
@@ -51,7 +35,7 @@ export const ClientDataReader = () => {
                       >
                         Used a tool! text: {message.text}
                         <br />
-                        tool: {message.toolOutput}
+                        tool: {message.toolName}
                         <br />
                         input: {message.toolInput}
                         <br />
@@ -79,31 +63,33 @@ export const ClientDataReader = () => {
                   </div>
                 );
               })}
+            {state.matches("AgentMessage.Loading") && (
+              <Spinner className="animate-spin" />
+            )}
           </div>
           <div className="p-4 border-t flex">
-            <input
+            <Input
               disabled={state.matches("AgentMessage")}
-              id="user-input"
               type="text"
               value={state.context?.userChatText}
               onChange={(e) => {
                 send({ type: "userType", text: e.target.value });
               }}
               placeholder="Type a message"
-              className="w-full px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full mr-2 px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button
-              disabled={state.matches("AgentMessage")}
+            <Button
+              disabled={
+                state.matches("AgentMessage") || !state.context.userChatText
+              }
               onClick={() => {
                 send({
                   type: "messageSend",
                 });
               }}
-              id="send-button"
-              className="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300"
             >
               Send
-            </button>
+            </Button>
           </div>
         </div>
       </div>

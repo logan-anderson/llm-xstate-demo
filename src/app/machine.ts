@@ -126,10 +126,11 @@ export const chatMachine = createMachine(
                     const oldMessages = context.messages.slice(0, -1);
                     const lastMessage =
                       context.messages[context.messages.length - 1];
-                    lastMessage.text += event.text;
 
-                    if (lastMessage.user === "assistant")
+                    if (lastMessage.user === "assistant") {
+                      lastMessage.text += event.text;
                       return [...oldMessages, lastMessage];
+                    }
                     return [
                       ...context.messages,
                       {
@@ -187,7 +188,7 @@ export const chatMachine = createMachine(
               // TODO: Does this need to be here?
               // agentType: "Typing",
               doneUseTool: {
-                target: "Typing",
+                target: "Loading",
                 actions: [{ type: "onUseToolAction" }],
               },
             },

@@ -18,7 +18,6 @@ export function LangChainStream() {
   const writer = stream.writable.getWriter();
 
   const handleError = async (e: Error, runId: string) => {
-    //   runs.delete(runId);
     await writer.ready;
     await writer.abort(e);
   };
@@ -91,24 +90,7 @@ export function LangChainStream() {
             log: action.log,
           },
         });
-        // handleStart(runId);
       },
-      // handleAgentEnd: async (
-      //   output: {
-      //     returnValues: { output: string };
-      //     log: string;
-      //   },
-      //   runId: string
-      // ) => {
-      //   await sendEvent({
-      //     writer,
-      //     data: {
-      //       type: "doneUseTool",
-      //       toolOutput: output.returnValues.output,
-      //       log: output.log,
-      //     },
-      //   });
-      // },
     } as CallbackHandlerMethods,
   };
 }
