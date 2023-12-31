@@ -7,7 +7,6 @@ import { BufferMemory, ChatMessageHistory } from "langchain/memory";
 import type { Message } from "@/types";
 import { LangChainStream } from "./streamCallbacks";
 import {
-  ChatMessage,
   HumanMessage,
   AIMessage,
   FunctionMessage,
