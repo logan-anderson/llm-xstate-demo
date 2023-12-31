@@ -22,26 +22,28 @@ export const ClientDataReader = () => {
       <div>
         <div className="bg-white shadow-md rounded-lg max-w-lg w-full">
           <div className="p-4 h-80 overflow-y-auto">
-            {state?.context?.messages?.map((message, index) => {
-              return (
-                <div
-                  className={`mb-2 ${
-                    message.user === "user" ? "text-right" : ""
-                  }`}
-                  key={index}
-                >
-                  <p
-                    className={`${
-                      message.user === "user"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    } rounded-lg py-2 px-4 inline-block`}
+            {state?.context?.messages
+              ?.filter((x) => x.text)
+              .map((message, index) => {
+                return (
+                  <div
+                    className={`mb-2 ${
+                      message.user === "user" ? "text-right" : ""
+                    }`}
+                    key={index}
                   >
-                    {message.text}
-                  </p>
-                </div>
-              );
-            })}
+                    <p
+                      className={`${
+                        message.user === "user"
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } rounded-lg py-2 px-4 inline-block`}
+                    >
+                      {message.text}
+                    </p>
+                  </div>
+                );
+              })}
           </div>
           <div className="p-4 border-t flex">
             <input

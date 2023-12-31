@@ -67,7 +67,16 @@ export function LangChainStream() {
         await writer.ready;
         await sendEvent({ writer, data: { type: "useTool" } });
       },
-      handleToolEnd: async (output: string, runId: string) => {
+      handleToolEnd: async (_tool, runId: string) => {
+        console.log("tool end");
+        await sendEvent({
+          writer,
+          data: {
+            text: _tool.toString() + "TOOL END",
+            type: "doneUseTool",
+            ctx: _tool,
+          },
+        });
         // writer.write(`<Observation>${output}</Observation>\n`);
         // await handleEnd(runId);
       },
@@ -75,10 +84,13 @@ export function LangChainStream() {
         // await handleError(e, runId);
       },
       handleAgentAction: async (_action: any, runId: string) => {
+        console.log("agent action");
+        console.log(_action);
         // handleStart(runId);
       },
       handleAgentEnd: async (_output: any, runId: string) => {
-        // await handleEnd(runId);
+        console.log("agent end");
+        console.log(_output);
       },
     } as CallbackHandlerMethods,
   };

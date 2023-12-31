@@ -54,12 +54,13 @@ export interface ChatMachineTypes {
     | { type: "done" }
     | { type: "useTool" }
     | { type: "userType"; text: string }
+    | { type: "doneUseTool"; text?: string; ctx?: any }
     | { type: "agentType"; text: string };
 }
 
 export const chatMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QGMAWBDALgOgKqzACcBZOWdGAYgFsyKwBlMAOwgG0AGAXUVAAcA9rACWmYQOa8QAD0QBaAIwLsAJgDMATjUr1HNQoAcmpQBoQAT0QBWDh2wB2dfbUA2HRwAsGlxoC+vszQsPAISOhhsABVzPmFmKEoAV1DovjBOHiQQQRExCSlZBB0PBw8FDw57KwUVcs8DM0si+w1sDQMDDw97DiMNKys1K39AjBwAQRhmTFJYcioICXTuKRzRcUkswtqXbBcrLw8VDQ8DPQ8XF0bEcoNVHRcK-Q59+xGQIImpmfCwbAAZAToCBxBL0aapZaZfhCdb5LaIRzKQxKcpuBTtLTXBBDZRuMpHFz2BS9Dh+AIfMbYSYsH5zegAoEg+JJAiRAQCAA2GVWsLym1AhTcKmw2k8FxUzhJF2xKg6bUuVmJtw0KiV70+1O+s3mf1SoMo4MwkJ5WTW-IKNxUemwlSVBn6BisKjcVwsiGOJQMRIUblVag66mGFM1NOmOoZ+pZyTA7K5pphuQ2loQBmJDg41szaguA06su69xdLgUgwMx3U5NGwTDdN1IVBcc5hu+JpWZr5yYRCG8u0qPgDaceJJU2KG9lFViJXXaU685IpzAEEDgUk+vKT8MF8jRbS0qJcpI0NQa7oQh+wDo0xL0AwqL1LGqp+CIEZgG7hApk8nae-0SkPM5j0lbFDD7AMlBeP0c0uJ9ghfMJ6QiKMoA-C1uzkGw-wPI8ansWVnFFEtM0MNU1B6KtKRrbVfjQrttwQCVVEgol8WPB0PFAqxWivKUrCMPRDxUOCvlpN8-kBYFQTordvwQao7FqElWJULxDBOWVywcDFDwOF1rQ6EStTE34ohiaSO03L9ChJWxRQJcp+OdV1ZROS8fT9dRAyGIza3Eht4ibGTrMRCo2m4qoFHI4dM001ooo8KcXjJfQ1DUfx-CAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QGMAWBDALgOgKqzACcBZOWdGAYgFsyKwBlMAOwgG0AGAXUVAAcA9rACWmYQOa8QAD0QBaAIwLsAJgDMATjUr1HNQoAcmpQBoQAT0QBWDh2wB2dfbUA2HRwAsGlxoC+vszQsPAISOhhsABVzPmFmKEoAV1DovjBOHiQQQRExCSlZBB0PBw8FDw57KwUVcs8DM0si+w1sDQMDDw97DiMNKys1K39AjBwAQRhmTFJYcioICXTuKRzRcUkswtqXbBcrLw8VDQ8DPQ8XF0bEcoNVHRcK-Q59+xGQIImpmfCwbAAZAToCBxBL0aapZaZfhCdb5LaIE52VwuBQuNQGVEqAwna4IDz6BwuDhWRzooYaSrvT7YSYsH5zegAoEg+JJAiRAQCAA2GVWsLym1AhTcKmw2k8FxUzgUniuFkQ2Lu3leSlOGhUpOpY1p31m8z+qVBlHBmEhfKya0FBRuKj02EqpJxVgMVhUbnlTWOJUx9jRx3UHXUwwCHx1dOm+qZRrZyTAnJ5FphuQ2NoQBj9Dg4duzaguA06eJU3Xu7tRgwMAc02uCEYZBpCoIT3JN33NK0tAtTCIQKod9h8GIzj1lKjxQ3s4qsLnsXXa068flDNLrUYi+CbXJbi2YYHw8a3SeyXfhwsQPjFLg6FyvfuODQVCAxdheal6dpxniG-lDzAEEDgKRPn5FNTxkeRyl2DQtCUNFeg4DQagfJpiWwHENEcMpamLYMaxwfcwkZGAQLhIVwIQOR2jaGClGJM5EOlPFDF2PQDBqexhwUJdRmCAi10NGJQRI60ezkGxqP0Wj4IY+wi2ccVUWzQxNTUHpuLDWs9V+YTuzPfE3FUJQXgHYtEJxDwmKsVp0KqTouhJaUXDw3V6X45lgSEztQLIwpqjsWpZRnNwvEMXFH2xMU-W8EkjjcXoDGc1dfiiQT4h0sDCiMu48z9Hp9idSsi2gtCXTnaDMUqDDEq0oi-g3eJm3SnzEFnOx+gw6pVJHbMixxbAFDzacXgQ-Q1DUH9fCAA */
     id: "chat",
     context: {
       userChatText: "",
@@ -97,15 +98,6 @@ export const chatMachine = createMachine(
                 userChatText: () => "",
               }),
               { type: "streamRes", params: {} },
-              // after streamRes add a blank agent Message
-              assign({
-                messages: ({ context }) => {
-                  return [
-                    ...context.messages,
-                    { text: "", user: "assistant" } as Message,
-                  ];
-                },
-              }),
             ],
           },
         },
@@ -123,13 +115,24 @@ export const chatMachine = createMachine(
                     const lastMessage =
                       context.messages[context.messages.length - 1];
                     lastMessage.text += event.text;
-                    return [...oldMessages, lastMessage];
+
+                    if (lastMessage.user === "assistant")
+                      return [...oldMessages, lastMessage];
+                    return [
+                      ...context.messages,
+                      {
+                        text: event.text,
+                        user: "assistant" as const,
+                      },
+                    ] as Message[];
                   },
                 }),
               },
+
               useTool: "UsingTool",
             },
           },
+
           Typing: {
             on: {
               agentType: {
@@ -140,16 +143,44 @@ export const chatMachine = createMachine(
                     const lastMessage =
                       context.messages[context.messages.length - 1];
                     lastMessage.text += event.text;
-                    return [...oldMessages, lastMessage];
+
+                    if (lastMessage.user === "assistant")
+                      return [...oldMessages, lastMessage];
+                    return [
+                      ...context.messages,
+                      {
+                        text: event.text,
+                        user: "assistant" as const,
+                      },
+                    ] as Message[];
                   },
                 }),
               },
               useTool: "UsingTool",
             },
           },
+
           UsingTool: {
             on: {
               agentType: "Typing",
+              doneUseTool: {
+                target: "Typing",
+                actions: assign({
+                  messages: ({ event, context }) => {
+                    if (event.text) {
+                      return [
+                        ...context.messages,
+                        {
+                          ctx: event.ctx,
+                          text: event.text,
+                          user: "tool" as const,
+                        },
+                      ];
+                    }
+                    return context.messages;
+                  },
+                }),
+              },
             },
           },
         },

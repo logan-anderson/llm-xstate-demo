@@ -6,7 +6,13 @@ import { BufferMemory, ChatMessageHistory } from "langchain/memory";
 
 import type { Message } from "@/types";
 import { LangChainStream } from "./streamCallbacks";
-import { ChatMessage } from "langchain/schema";
+import {
+  ChatMessage,
+  HumanMessage,
+  AIMessage,
+  FunctionMessage,
+  SystemMessage,
+} from "langchain/schema";
 
 const tools = [new Calculator()];
 const chat = new ChatOpenAI({
@@ -18,8 +24,23 @@ const chat = new ChatOpenAI({
 
 export const getExecutor = async ({ messages }: { messages: Message[] }) => {
   const { handlers, stream } = LangChainStream();
-  const memoryMessages: ChatMessage[] = messages.slice(0, -2).map((message) => {
-    return new ChatMessage({ content: message.text, role: message.user });
+  // TODO: use functions instead of tool
+  const memoryMessages = messages.slice(0, -2).map((message) => {
+    if (message.user === "user")
+      return new HumanMessage({ content: message.text });
+    if (message.user === "assistant")
+      return new AIMessage({ content: message.text });
+    if (message.user === "tool")
+      return new FunctionMessage({
+        content: message.text || "",
+        name: message.user,
+      });
+    if (message.user === "system")
+      return new SystemMessage({ content: message.text });
+
+    throw new Error(
+      "Unknown message type. Must be one of user, assistant, tool, system"
+    );
   });
 
   const memory = new BufferMemory({
