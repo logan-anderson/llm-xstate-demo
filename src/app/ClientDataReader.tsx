@@ -12,13 +12,7 @@ export const AssistantMessage = ({ text }: { text: string }) => {
 };
 
 export const ClientDataReader = () => {
-  const [state, send] = useMachine(chatMachine, {
-    inspect: (inspectionEvent) => {
-      if (inspectionEvent.type === "@xstate.event") {
-        console.log(inspectionEvent.event);
-      }
-    },
-  });
+  const [state, send] = useMachine(chatMachine);
 
   return (
     <div>
@@ -76,7 +70,7 @@ export const ClientDataReader = () => {
               <Spinner className="animate-spin" />
             )}
           </div>
-          <div className="p-4 border-t flex">
+          <div className="flex items-center h-[20%] border-t p-4">
             <Input
               disabled={state.matches("AgentMessage")}
               type="text"
@@ -84,8 +78,8 @@ export const ClientDataReader = () => {
               onChange={(e) => {
                 send({ type: "userType", text: e.target.value });
               }}
-              placeholder="Type a message"
-              className="w-full mr-2 px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Type your message..."
+              className="flex-grow mr-2"
             />
             <Button
               disabled={

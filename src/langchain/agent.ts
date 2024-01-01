@@ -1,7 +1,7 @@
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { ChatOpenAI } from "langchain/chat_models/openai";
-// import { SerpAPI } from "langchain/tools";
 import { Calculator } from "langchain/tools/calculator";
+import { SerpAPI, WikipediaQueryRun } from "langchain/tools";
 import { BufferMemory, ChatMessageHistory } from "langchain/memory";
 
 import type { Message } from "@/types";
@@ -12,13 +12,23 @@ import {
   FunctionMessage,
   SystemMessage,
 } from "langchain/schema";
+import { MermaidChartTool } from "./tools";
 
-const tools = [new Calculator()];
+const tools = [
+  MermaidChartTool,
+  new Calculator(),
+  new WikipediaQueryRun({
+    topKResults: 3,
+    maxDocContentLength: 4000,
+  }),
+  new SerpAPI(),
+];
+
 const chat = new ChatOpenAI({
   modelName: "gpt-3.5-turbo-1106",
+  // modelName: "gpt-4-1106-preview",
   temperature: 0,
   streaming: true,
-  //   verbose: true,
 });
 
 export const getExecutor = async ({ messages }: { messages: Message[] }) => {
@@ -31,8 +41,9 @@ export const getExecutor = async ({ messages }: { messages: Message[] }) => {
       return new AIMessage({ content: message.text });
     if (message.user === "tool")
       return new FunctionMessage({
-        content: message.text || "",
-        name: message.user,
+        content:
+          `Input: ${message.toolInput}\nOutput: ${message.toolOutput}` || "",
+        name: message.toolName || message.user,
       });
     if (message.user === "system")
       return new SystemMessage({ content: message.text });
@@ -51,6 +62,12 @@ export const getExecutor = async ({ messages }: { messages: Message[] }) => {
   const executor = await initializeAgentExecutorWithOptions(tools, chat, {
     memory,
     agentType: "openai-functions",
+    agentArgs: {
+      systemMessage: new SystemMessage({
+        content:
+          "You are a helpful AI assistant. Always research using the tools available when applicable. You will always respond in markdown format.",
+      }),
+    },
   });
   return { executor, stream, handlers };
 };
