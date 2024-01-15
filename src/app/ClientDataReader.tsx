@@ -33,9 +33,11 @@ export const ClientDataReader = () => {
                       <div
                         className={` bg-gray-200 text-gray-700 rounded-lg py-2 px-4 inline-block`}
                       >
-                        Used a tool! text: {message.text}
+                        Used a tool!
                         <br />
                         tool: {message.toolName}
+                        <br />
+                        text: {message.text}
                         <br />
                         input: {message.toolInput}
                         <br />

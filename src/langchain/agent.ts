@@ -1,6 +1,5 @@
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { Calculator } from "langchain/tools/calculator";
 import { SerpAPI, WikipediaQueryRun } from "langchain/tools";
 import { BufferMemory, ChatMessageHistory } from "langchain/memory";
 
@@ -12,11 +11,11 @@ import {
   FunctionMessage,
   SystemMessage,
 } from "langchain/schema";
-import { MermaidChartTool } from "./tools";
+import { CodeExecutionTool, MermaidChartTool } from "./tools";
 
 const tools = [
+  CodeExecutionTool,
   MermaidChartTool,
-  new Calculator(),
   new WikipediaQueryRun({
     topKResults: 3,
     maxDocContentLength: 4000,
