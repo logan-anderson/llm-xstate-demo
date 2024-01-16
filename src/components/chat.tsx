@@ -1,6 +1,6 @@
 "use client";
 import { useMachine } from "@xstate/react";
-import { chatMachine } from "./machine";
+import { chatMachine } from "@/lib/chatMachine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/icons";
@@ -11,7 +11,7 @@ export const AssistantMessage = ({ text }: { text: string }) => {
   return content;
 };
 
-export const ClientDataReader = () => {
+export const Chat = () => {
   const [state, send] = useMachine(chatMachine);
 
   return (

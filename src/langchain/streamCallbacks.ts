@@ -1,4 +1,4 @@
-import { ChatMachineTypes } from "@/app/machine";
+import { ChatMachineTypes } from "@/lib/chatMachine";
 import type { CallbackHandlerMethods } from "langchain/callbacks";
 import { AgentAction } from "langchain/schema";
 
