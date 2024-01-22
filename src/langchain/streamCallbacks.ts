@@ -29,7 +29,7 @@ export function LangChainStream() {
         if (token)
           await sendEvent({ writer, data: { text: token, type: "agentType" } });
       },
-      handleChainEnd: async (_outputs: any, runId: string) => {
+      handleAgentEnd: async () => {
         await sendEvent({ writer, data: { type: "done" } });
         await writer.close();
       },

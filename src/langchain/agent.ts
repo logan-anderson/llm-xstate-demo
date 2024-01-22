@@ -1,8 +1,9 @@
-import { initializeAgentExecutorWithOptions } from "langchain/agents";
+import { AgentExecutor, createOpenAIToolsAgent } from "langchain/agents";
 import { ChatOpenAI } from "@langchain/openai";
 import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_run";
 import { SerpAPI } from "@langchain/community/tools/serpapi";
 import { BufferMemory, ChatMessageHistory } from "langchain/memory";
+import { pull } from "langchain/hub";
 
 import type { Message } from "@/types";
 import { LangChainStream } from "./streamCallbacks";
@@ -13,6 +14,7 @@ import {
   SystemMessage,
 } from "@langchain/core/messages";
 import { CodeExecutionTool, MermaidChartTool } from "./tools";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 const tools = [
   CodeExecutionTool,
@@ -59,15 +61,22 @@ export const getExecutor = async ({ messages }: { messages: Message[] }) => {
     returnMessages: true,
     outputKey: "output",
   });
-  const executor = await initializeAgentExecutorWithOptions(tools, chat, {
-    memory,
-    agentType: "openai-functions",
-    agentArgs: {
-      systemMessage: new SystemMessage({
-        content:
-          "You are a helpful AI assistant. Always research using the tools available when applicable. You will always respond in markdown format.",
-      }),
-    },
+
+  // TODO: make my own chat prompt
+  const chatPrompt = await pull<ChatPromptTemplate>(
+    "hwchase17/openai-tools-agent"
+  );
+
+  const agent = await createOpenAIToolsAgent({
+    llm: chat,
+    tools,
+    prompt: chatPrompt,
   });
+  const executor = new AgentExecutor({
+    agent,
+    tools,
+    memory,
+  });
+
   return { executor, stream, handlers };
 };
