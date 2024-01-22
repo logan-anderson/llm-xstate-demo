@@ -1,6 +1,6 @@
-import { OpenAI } from "langchain/llms/openai";
-import { PromptTemplate } from "langchain/prompts";
-import { DynamicStructuredTool } from "langchain/tools";
+import { OpenAI } from "@langchain/openai";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 
 const model = new OpenAI({

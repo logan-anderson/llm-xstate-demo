@@ -1,6 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@langchain/community': ^0.0.19
+  '@langchain/core': ^0.1.17
+  '@langchain/openai': ^0.0.12
   '@radix-ui/react-dialog': ^1.0.5
   '@radix-ui/react-slot': ^1.0.2
   '@types/node': ^20
@@ -31,6 +34,9 @@ specifiers:
   zod: ^3.22.4
 
 dependencies:
+  '@langchain/community': 0.0.19
+  '@langchain/core': 0.1.17
+  '@langchain/openai': 0.0.12
   '@radix-ui/react-dialog': 1.0.5_y25r3j74y2ixp3wwje7zxg74ra
   '@radix-ui/react-slot': 1.0.2_qinpt5tsrh57s4kh6guy25fqdq
   '@xstate/react': 4.0.1_7dl2qca24mx6qcxiwslvegrtcu

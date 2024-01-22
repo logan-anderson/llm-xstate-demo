@@ -1,6 +1,7 @@
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { SerpAPI, WikipediaQueryRun } from "langchain/tools";
+import { ChatOpenAI } from "@langchain/openai";
+import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_run";
+import { SerpAPI } from "@langchain/community/tools/serpapi";
 import { BufferMemory, ChatMessageHistory } from "langchain/memory";
 
 import type { Message } from "@/types";
@@ -10,7 +11,7 @@ import {
   AIMessage,
   FunctionMessage,
   SystemMessage,
-} from "langchain/schema";
+} from "@langchain/core/messages";
 import { CodeExecutionTool, MermaidChartTool } from "./tools";
 
 const tools = [

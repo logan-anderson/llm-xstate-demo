@@ -1,6 +1,6 @@
 import { ChatMachineTypes } from "@/lib/chatMachine";
 import type { CallbackHandlerMethods } from "langchain/callbacks";
-import { AgentAction } from "langchain/schema";
+import { AgentAction } from "@langchain/core/agents";
 
 async function sendEvent({
   writer,
