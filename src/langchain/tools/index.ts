@@ -46,6 +46,12 @@ export const CodeExecutionTool = new DynamicStructuredTool({
     // ]),
   }),
   func: async ({ input }) => {
+    const lines = input.split("\n");
+    // If the last line doesn't have a print statement, add one.
+    if (!input.includes("print(")) {
+      lines[lines.length - 1] = `print(${lines[lines.length - 1]})`;
+    }
+    input = lines.join("\n");
     const url = "https://onecompiler-apis.p.rapidapi.com/api/v1/run";
     const options = {
       method: "POST",
